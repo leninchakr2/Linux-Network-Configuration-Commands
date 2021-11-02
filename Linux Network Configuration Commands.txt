@@ -1,0 +1,103 @@
+
+Linux Network Configuration Commands:
+
+	Show manual page for 'ip' command:
+		man ip
+		
+	How to get help for list of possible COMMANDs for a OBJECT:
+		ip OBJECT help
+			Eg:	ip addr help
+		
+	Synopsis:
+		ip [OPTIONs] OBJECT {COMMAND | help}
+		
+	Most frequently used OBJECTs:
+		addr - Display & Modify ip addresses				{Most frequently used COMMANDs: show, add, del}
+		link - Display & Modify state of network interfaces	{Most frequently used COMMANDs: show, set, add, del}
+		route - Display & alter routing table
+		neigh - Display & alter ARP table
+		
+	OBJECTs:
+		addr:
+			ip addr show							-	Lists network interfaces {iFace} & its ip addresses {ip/mask}
+			ip -4 addr show							-	Shows ip4 version of addresses of each interfaces
+			ip -6 addr show							-	Shows ip6 version of addresses of each interfaces
+			ip -4 addr show dev "iFace"				-	Shows ip4 version of addresses of particular interface "iFace"
+			
+			sudo ip addr add "ip/mask" dev "iFace"	-	Adds an address "ip/mask" to a network interface "iFace"	{{hint: first run 'ip addr help'}}
+			sudo ip addr del "ip/mask" dev "iFace"	-	Deletes an address "ip/mask" from a network interface "iFace"
+			
+		link:
+			ip link show							-	Lists network interfaces {iFace} & its mac address
+			ip link show dev "iFace"				-	Lists the network interface "iFace" & its mac address
+			
+			sudo ip link set dev "iFace" down		-	Sets interface "iFace" down	{{hint: first run 'ip link help'}}
+			sudo ip link set dev "iFace" up			-	Sets interface "iFace" up
+		
+		route:
+			ip route list							-	Shows,
+															default 	- 	default Gateway
+															Mask		- 	192.168.1.0/24
+															interface	-	iFace
+															ip address	-	192.168.1.3
+			
+	Fun fact {Try on terminal}
+		ip addr show					Vs					ip link show
+		{ip address is highlighted}							{mac address is highlighted}
+		
+		ip addr - Shows network interfaces and its ip addresses
+		ip link - Shows network interfaces and its mac addresses
+		
+	How to get Gateway of an interface:
+		ip route
+		
+		
+DHCP client:
+
+	sudo dhclient -v -r		-	release the ip's
+
+	sudo dhclient -v		-	Renews dynamically assigned ip address for all network interface
+	
+
+Restarting Network:
+
+	Best approach:	Run the generalized systemctl status command	+	Look for Correct name of network manager service
+
+	Option 1:
+				sudo systemctl restart NetworkManager.service
+	
+	Option 2:
+				sudo /etc/init.d/networking restart
+
+	Option 3:
+				sudo service networking stop
+
+Setting Static ip:
+
+	install netplan package
+	
+	sudo dhclient -v -r
+	
+	sudo vim /etc/netplan/01-Network-Manager.yaml
+	
+		network:
+			ethernets:
+				enp0s3:
+					dhcp4: false								//	dhcp protocol is disabled
+					addresses:
+							-	192.168.1.111/24
+					gateway4: 192.168.1.1
+					nameservers:
+						addresses: [8.8.8.8, 1.1.1.1]
+			
+			version: 2
+			
+	sudo netplan try
+	
+	sudo netplan apply
+	
+	sudo ip link set dev enp0s3 down
+	
+	sudo ip link set dev enp0s3 up
+	
+	ip addr
